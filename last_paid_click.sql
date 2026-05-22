@@ -13,6 +13,6 @@ SELECT
     l.status_id
 FROM sessions s
 LEFT JOIN leads l ON s.visitor_id = l.visitor_id
-WHERE s.medium IN ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
-ORDER BY l.amount DESC NULLS LAST, s.visit_date ASC
+WHERE s.medium IN ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social') and s.source ilike '%vk%' or s.source ilike '%yandex%' 
+ORDER BY l.amount DESC NULLS LAST, s.visit_date, s.source, s.medium, s.campaign, s.content
 LIMIT 10;
