@@ -13,7 +13,7 @@ SELECT
     l.status_id
 FROM sessions s
 LEFT JOIN leads l ON s.visitor_id = l.visitor_id
-where
+WHERE
 	s.medium IN ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
 	AND s.source ILIKE '%vk%' OR s.source ILIKE '%yandex%' 
 ORDER by
