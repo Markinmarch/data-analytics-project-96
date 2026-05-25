@@ -17,9 +17,5 @@ WHERE
 	s.medium IN ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
 	AND s.source ILIKE '%vk%' OR s.source ILIKE '%yandex%' 
 ORDER by
-	l.amount DESC NULLS LAST,
-	s.visit_date,
-	s.source NULLS LAST,
-	s.medium NULLS LAST,
-	s.campaign NULLS LAST,
-	s.content NULLS LAST;
+	9 DESC NULLS LAST, 2, 3, 4, 5
+LIMIT 10;
