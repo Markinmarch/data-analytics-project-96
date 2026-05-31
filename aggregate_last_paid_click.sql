@@ -21,6 +21,7 @@ WITH visitors_with_leads AS (
             AND s.visit_date <= l.created_at
     WHERE s.medium != 'organic'
 ),
+
 aggregated_data AS (
     SELECT
         utm_source,
@@ -39,6 +40,7 @@ aggregated_data AS (
     WHERE rn = 1
     GROUP BY 1, 2, 3, 4
 ),
+
 marketing_data AS (
     SELECT
         DATE(campaign_date) AS visit_date,
@@ -50,14 +52,15 @@ marketing_data AS (
     GROUP BY 1, 2, 3, 4
     UNION ALL
     SELECT
-        DATE(campaign_date) as visit_date,
+        DATE(campaign_date) AS visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
-        SUM(daily_spent) as total_cost
+        SUM(daily_spent) AS total_cost
     FROM vk_ads
-    GROUP BY 1, 2, 3, 4 	
+    GROUP BY 1, 2, 3, 4
 )
+
 SELECT
     a.visit_date,
     a.visitors_count,
@@ -75,6 +78,6 @@ LEFT JOIN marketing_data AS m
         AND a.utm_source = m.utm_source
         AND a.utm_medium = m.utm_medium
         AND a.utm_campaign = m.utm_campaign
-ORDER BY 
-	9 DESC NULLS LAST, 1, 2 DESC, 3, 4
+ORDER BY
+    9 DESC NULLS LAST, 1, 2 DESC, 3, 4
 LIMIT 15;
