@@ -32,17 +32,22 @@ FROM leads;
 
 -- Какая конверсия из клика в лид и из лида в оплату
 WITH
-	converse_leed AS (
-		SELECT COUNT(DISTINCT visitor_id) AS leed FROM leads
+converse_leed AS (
+    SELECT COUNT(DISTINCT visitor_id) AS leed FROM leads
 ),
-	converse_payment AS (
-	    SELECT COUNT(DISTINCT visitor_id) AS purch FROM leads
-	    WHERE status_id = 142 OR closing_reason = 'Успешно реализовано'
+
+converse_payment AS (
+    SELECT COUNT(DISTINCT visitor_id) AS purch FROM leads
+    WHERE status_id = 142 OR closing_reason = 'Успешно реализовано'
 )
+
 SELECT
-    CAST(converse_leed.leed AS FLOAT) / total_converse.click AS click_to_lead,
-    CAST(converse_payment.purch AS FLOAT) / converse_leed.leed AS lead_to_purchase
-FROM (SELECT COUNT(DISTINCT visitor_id) AS click FROM sessions) total_converse
+    CAST(converse_leed.leed AS FLOAT) / total_converse.click
+        AS click_to_lead,
+    CAST(converse_payment.purch AS FLOAT) / converse_leed.leed
+        AS lead_to_purchase
+FROM (SELECT COUNT(DISTINCT visitor_id) AS click FROM sessions)
+    AS total_converse
 CROSS JOIN converse_leed
 CROSS JOIN converse_payment;
 
@@ -90,13 +95,14 @@ WITH last_paid_click AS (
             OVER (PARTITION BY s.visitor_id ORDER BY s.visit_date DESC)
             AS rn
     FROM
-        sessions s
+        sessions AS s
     LEFT JOIN
-        leads l
+        leads AS l
         ON s.visitor_id = l.visitor_id AND s.visit_date <= l.created_at
     WHERE
         s.medium IN ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
 ),
+
 ads AS (
     SELECT
         campaign_date,
@@ -124,6 +130,7 @@ ads AS (
         utm_medium,
         utm_campaign
 ),
+
 lpc AS (
     SELECT
         lpc.utm_source,
@@ -137,7 +144,7 @@ lpc AS (
         ) AS purchases_count,
         SUM(lpc.amount) AS revenue
     FROM
-        last_paid_click lpc
+        last_paid_click AS lpc
     WHERE
         lpc.rn = 1
     GROUP BY
@@ -146,6 +153,7 @@ lpc AS (
         lpc.utm_medium,
         lpc.utm_campaign
 )
+
 SELECT
     ads.utm_source,
     ROUND(SUM(ads.daily_spent) / NULLIF(SUM(lpc.visitors_count), 0), 2) AS cpu,
@@ -154,8 +162,15 @@ SELECT
         SUM(ads.daily_spent) / NULLIF(SUM(lpc.purchases_count), 0), 2
     ) AS cppu,
     ROUND(
-        ((SUM(lpc.revenue) - SUM(ads.daily_spent)) / NULLIF(SUM(ads.daily_spent), 0))* 100,
-        2
+        (
+            (
+                SUM(lpc.revenue) - SUM(ads.daily_spent)
+            )
+            / NULLIF(
+                SUM(ads.daily_spent),
+                0
+            )
+        ) * 100, 2
     ) AS roi
 FROM lpc
 LEFT JOIN ads
